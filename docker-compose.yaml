@@ -1,0 +1,115 @@
+services:
+  keycloak:
+    image: quay.io/keycloak/keycloak:26.1.2
+    container_name: ${KEYCLOAK_HOSTNAME}
+    ports:
+      - "${KEYCLOAK_PORT_HOST}:${KEYCLOAK_PORT_CONTAINER}"
+    environment:
+      - KEYCLOAK_ADMIN=${KC_ADMIN_USER}
+      - KEYCLOAK_ADMIN_PASSWORD=${KC_ADMIN_PASSWORD}
+      - KC_DB=postgres
+      - KC_DB_URL_HOST=${POSTGRES_HOSTNAME}
+      - KC_DB_URL_DATABASE=${POSTGRES_DB_KEYCLOAK}
+      - KC_DB_USERNAME=${POSTGRES_USER}
+      - KC_DB_PASSWORD=${POSTGRES_PASSWORD}
+      - KK_TO_RMQ_URL=${RABBITMQ_HOSTNAME}
+      - KK_TO_RMQ_VHOST=${RABBITMQ_VHOST}
+      - KK_TO_RMQ_EXCHANGE=amq.topic
+      - KK_TO_RMQ_USERNAME=${RABBITMQ_APP_USER} 
+      - KK_TO_RMQ_PASSWORD=${RABBITMQ_APP_PASSWORD}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    volumes:
+      - ./keycloak-jars/keycloak-theme.jar:/opt/keycloak/providers/keycloak-theme.jar:z
+      - ./keycloak-jars/keycloak-to-rabbit-3.0.5.jar:/opt/keycloak/providers/keycloak-to-rabbit.jar:z
+    command: start-dev --hostname=localhost
+    healthcheck:
+      test: ["CMD", "sh", "-c", "/opt/keycloak/bin/kc.sh show-config"]
+      interval: 15s
+      timeout: 5s
+      retries: 10
+      start_period: 40s
+    networks:
+      - myreadings-net
+
+  rabbitmq:
+    image: rabbitmq:3.13-management-alpine
+    container_name: ${RABBITMQ_HOSTNAME}
+    ports:
+      - "${RABBITMQ_PORT_HOST}:${RABBITMQ_PORT_CONTAINER}"
+      - "${RABBITMQ_UI_PORT_HOST}:${RABBITMQ_UI_PORT_CONTAINER}"
+    environment:
+      - RABBITMQ_DEFAULT_USER=${RABBITMQ_USER}
+      - RABBITMQ_DEFAULT_PASS=${RABBITMQ_PASSWORD}
+    healthcheck: 
+      test: ["CMD", "rabbitmq-diagnostics", "check_running", "-q"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 20s
+    networks:
+      - myreadings-net
+
+  postgres:
+    image: postgres:17.4
+    container_name: ${POSTGRES_HOSTNAME}
+    ports:
+      - "${POSTGRES_PORT_HOST}:${POSTGRES_PORT_CONTAINER}"
+    environment:
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./pg-init:/docker-entrypoint-initdb.d:z
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - myreadings-net
+
+  pgadmin:
+    image: dpage/pgadmin4:9.7.0
+    container_name: ${PGADMIN_HOSTNAME}
+    ports:
+      - "${PGADMIN_PORT_HOST}:${PGADMIN_PORT_CONTAINER}"
+    environment:
+      - PGADMIN_DEFAULT_EMAIL=user@example.com
+      - PGADMIN_DEFAULT_PASSWORD=${KC_ADMIN_PASSWORD}
+      - PGADMIN_SERVER_JSON_FILE=/var/lib/pgadmin/servers.json
+      - PGADMIN_REPLACE_SERVERS_ON_STARTUP=true
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_HOSTNAME=${POSTGRES_HOSTNAME}
+      - POSTGRES_PORT_CONTAINER=${POSTGRES_PORT_CONTAINER}
+    volumes:
+      - ./pgadmin/servers.json:/var/lib/pgadmin/servers.json:z
+    networks:
+      - myreadings-net
+
+  ansible-provisioner:
+    build:
+      context: ./ansible
+    container_name: ansible-provisioner
+    depends_on:
+      keycloak:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+    env_file:
+      - .env
+    networks:
+      - myreadings-net
+
+networks:
+  myreadings-net:
+    driver: bridge
+
+volumes:
+  postgres_data:

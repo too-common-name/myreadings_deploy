@@ -1,0 +1,5 @@
+CREATE DATABASE books_db;
+CREATE DATABASE users_db;
+CREATE DATABASE review_db;
+CREATE DATABASE readinglist_db;
+CREATE DATABASE keycloak_db;

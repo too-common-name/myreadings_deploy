@@ -1,0 +1,10 @@
+---
+login_host: "{{ lookup('env', 'RABBITMQ_HOSTNAME') }}"
+login_user: "{{ lookup('env', 'RABBITMQ_USER') }}"
+login_password: "{{ lookup('env', 'RABBITMQ_PASSWORD') }}"
+
+rabbitmq_vhost: "{{ lookup('env', 'RABBITMQ_VHOST') }}"
+rabbitmq_app_user: "{{ lookup('env', 'RABBITMQ_APP_USER') }}"
+rabbitmq_app_password: "{{ lookup('env', 'RABBITMQ_APP_PASSWORD') }}"
+rabbitmq_queue_name: "{{ lookup('env', 'RABBITMQ_QUEUE_NAME') }}"
+rabbitmq_binding_key: "{{ lookup('env', 'RABBITMQ_BINDING_KEY') }}"
