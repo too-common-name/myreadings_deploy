@@ -116,7 +116,6 @@ services:
       - myreadings-net
     profiles:
       - app
-
   myreadings-ui:
     build:
       context: ../myreadings_ui
