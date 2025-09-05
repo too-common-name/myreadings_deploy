@@ -12,9 +12,9 @@ keycloak_client_name: "{{ lookup('env', 'KEYCLOAK_CLIENT_NAME') }}"
 keycloak_self_registration: "{{ lookup('env', 'KEYCLOAK_SELF_REGISTRATION') }}"
 
 # Frontend application URLs for redirect
-myreadings_root_url: "{{ lookup('env', 'FRONTEND_URL') }}"
+myreadings_root_url: "{{ lookup('env', 'FRONTEND_URL') }}:{{ lookup('env', 'FRONTEND_PORT_HOST') }}"
 myreadings_redirect_uris:
-  - "{{ lookup('env', 'FRONTEND_URL') }}/*"
+  - "{{ lookup('env', 'FRONTEND_URL') }}:{{ lookup('env', 'FRONTEND_PORT_HOST') }}/*"
 
 # Admin credentials for connecting to Keycloak
 keycloak_admin_user: "{{ lookup('env', 'KC_ADMIN_USER') }}"

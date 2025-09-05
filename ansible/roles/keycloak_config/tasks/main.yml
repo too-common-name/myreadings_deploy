@@ -41,6 +41,8 @@
     name: "{{ keycloak_client_name }}"
     root_url: "{{ myreadings_root_url }}"
     redirect_uris: "{{ myreadings_redirect_uris }}"
+    web_origins:
+      - "{{ myreadings_root_url }}"
     public_client: true
     standard_flow_enabled: true
     direct_access_grants_enabled: false

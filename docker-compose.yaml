@@ -25,7 +25,7 @@ services:
     volumes:
       - ./keycloak-jars/keycloak-theme.jar:/opt/keycloak/providers/keycloak-theme.jar:z
       - ./keycloak-jars/keycloak-to-rabbit-3.0.5.jar:/opt/keycloak/providers/keycloak-to-rabbit.jar:z
-    command: start-dev --hostname=localhost
+    command: start-dev
     healthcheck:
       test: ["CMD", "sh", "-c", "/opt/keycloak/bin/kc.sh show-config"]
       interval: 15s
@@ -34,7 +34,6 @@ services:
       start_period: 40s
     networks:
       - myreadings-net
-
   rabbitmq:
     image: rabbitmq:3.13-management-alpine
     container_name: ${RABBITMQ_HOSTNAME}
@@ -52,7 +51,6 @@ services:
       start_period: 20s
     networks:
       - myreadings-net
-
   postgres:
     image: postgres:17.4
     container_name: ${POSTGRES_HOSTNAME}
@@ -71,7 +69,6 @@ services:
       retries: 5
     networks:
       - myreadings-net
-
   pgadmin:
     image: dpage/pgadmin4:9.7.0
     container_name: ${PGADMIN_HOSTNAME}
@@ -90,7 +87,6 @@ services:
       - ./pgadmin/servers.json:/var/lib/pgadmin/servers.json:z
     networks:
       - myreadings-net
-
   ansible-provisioner:
     build:
       context: ./ansible
@@ -106,6 +102,33 @@ services:
       - .env
     networks:
       - myreadings-net
+  myreadings-app:
+    build:
+      context: ../myreadings
+      dockerfile: application/src/main/docker/Dockerfile
+    container_name: ${BACKEND_HOSTNAME}
+    env_file:
+      - .env
+    depends_on:
+      ansible-provisioner:
+        condition: service_completed_successfully
+    networks:
+      - myreadings-net
+    profiles:
+      - app
+
+  myreadings-ui:
+    build:
+      context: ../myreadings_ui
+    container_name: ${FRONTEND_HOSTNAME}
+    ports:
+      - "${FRONTEND_PORT_HOST}:${FRONTEND_PORT_CONTAINER}"
+    depends_on:
+      - myreadings-app
+    networks:
+      - myreadings-net
+    profiles:
+      - app
 
 networks:
   myreadings-net:
