@@ -34,3 +34,8 @@ spec:
           selfHeal: true
         syncOptions:
         - CreateNamespace=true
+      ignoreDifferences:
+      - group: kubevirt.io
+        kind: VirtualMachine
+        jqPathExpressions:
+        - .spec.template.spec.domain.devices.disks[].disk.serial 
