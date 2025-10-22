@@ -7,6 +7,7 @@ metadata:
     role: auth
     ansible-managed: "true"
 spec:
+  runStrategy: Always
   dataVolumeTemplates:
   - apiVersion: cdi.kubevirt.io/v1beta1
     kind: DataVolume

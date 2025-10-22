@@ -6,6 +6,7 @@ metadata:
     app: postgres
     role: database
 spec:
+  runStrategy: Always
   dataVolumeTemplates:
   - apiVersion: cdi.kubevirt.io/v1beta1
     kind: DataVolume
