@@ -48,6 +48,10 @@ spec:
             disk:
               bus: virtio
               serial: PGSQL-PASS
+          interfaces:
+          - name: default
+            masquerade: {}
+          rng: {}
       networks:
       - name: default
         pod: {}
