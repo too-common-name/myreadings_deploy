@@ -20,7 +20,7 @@ spec:
       storage:
         resources:
           requests:
-            storage: 40Gi
+            storage: 30Gi
   template:
     metadata:
       labels:
