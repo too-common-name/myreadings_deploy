@@ -1,0 +1,27 @@
+@startuml
+
+!theme plain
+
+title MyReadings — Component Topology & Ports (HTTP-Only)
+
+actor "User" as user
+
+rectangle "Nginx VM\n(port: 80)" as nginx
+rectangle "EAP VM\n(port: 8080)" as eap
+rectangle "Keycloak VM\n(port: 8080)" as keycloak
+rectangle "RabbitMQ VM\n(ports: 5672, 15672)" as rabbitmq
+database "PostgreSQL VM\n(port: 5432)" as pgsql
+
+user --> nginx : Loads app via Route
+user --> keycloak : Redirected for login via Route
+
+nginx --> eap : HTTP (8080)
+
+eap --> keycloak : HTTP (8080)
+eap --> rabbitmq : AMQP (5672)
+eap --> pgsql : JDBC (5432)
+
+keycloak --> rabbitmq : AMQP (5672)
+keycloak --> pgsql : JDBC (5432)
+
+@enduml

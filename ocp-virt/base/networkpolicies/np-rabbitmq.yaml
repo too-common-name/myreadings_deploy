@@ -1,0 +1,33 @@
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-ingress-to-rabbitmq
+spec:
+  podSelector:
+    matchLabels:
+      app: rabbitmq
+  policyTypes:
+  - Ingress
+  ingress:
+  - from:
+    - podSelector:
+        matchLabels:
+          app: eap
+    - podSelector:
+        matchLabels:
+          app: keycloak
+    ports:
+    - protocol: TCP
+      port: 5672
+  - from:
+    - podSelector: {}
+    ports:
+    - protocol: TCP
+      port: 15672
+  - from:
+    - namespaceSelector:
+        matchLabels:
+          name: aap-namespace
+    ports:
+    - protocol: TCP
+      port: 22

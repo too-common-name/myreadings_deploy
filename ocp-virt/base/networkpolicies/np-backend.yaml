@@ -1,0 +1,25 @@
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-ingress-to-backend
+spec:
+  podSelector:
+    matchLabels:
+      app: eap
+  policyTypes:
+  - Ingress
+  ingress:
+  - from:
+    - podSelector:
+        matchLabels:
+          app: nginx
+    ports:
+    - protocol: TCP
+      port: 8080 
+  - from:
+    - namespaceSelector:
+        matchLabels:
+          name: aap
+    ports:
+    - protocol: TCP
+      port: 22

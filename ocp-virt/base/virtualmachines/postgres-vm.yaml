@@ -1,0 +1,86 @@
+apiVersion: kubevirt.io/v1
+kind: VirtualMachine
+metadata:
+  name: postgres-vm
+  labels:
+    app: postgres
+    role: database
+spec:
+  runStrategy: RerunOnFailure
+  dataVolumeTemplates:
+  - apiVersion: cdi.kubevirt.io/v1beta1
+    kind: DataVolume
+    metadata:
+      name: postgres-vm-root
+    spec:
+      sourceRef:
+        kind: DataSource
+        name: fedora
+        namespace: openshift-virtualization-os-images
+      storage:
+        resources:
+          requests:
+            storage: 40Gi
+  template:
+    metadata:
+      labels:
+        app: postgres
+        role: database
+    spec:
+      domain:
+        cpu:
+          cores: 2
+        memory:
+          guest: 4Gi
+        devices:
+          disks:
+          - name: rootdisk
+            disk:
+              bus: virtio
+          - name: cloudinitdisk
+            disk:
+              bus: virtio
+          - name: initscripts
+            disk:
+              bus: virtio
+              serial: PGSQL-INIT
+          - name: pgpassword
+            disk:
+              bus: virtio
+              serial: PGSQL-PASS
+      networks:
+      - name: default
+        pod: {}
+      volumes:
+      - name: rootdisk
+        dataVolume:
+          name: postgres-vm-root
+      - name: initscripts
+        configMap:
+          name: postgres-init-scripts
+      - name: pgpassword
+        secret:
+          secretName: postgres-credentials
+      - name: cloudinitdisk
+        cloudInitNoCloud:
+          userData: |-
+            #cloud-config
+            hostname: postgres-vm
+            user: fedora
+            packages:
+              - python3
+              - postgresql-server
+              - postgresql-contrib
+            runcmd:
+              - postgresql-setup --initdb
+              - echo "host all all 0.0.0.0/0 md5" >> /var/lib/pgsql/data/pg_hba.conf
+              - echo "listen_addresses = '*'" >> /var/lib/pgsql/data/postgresql.conf
+              - systemctl restart postgresql
+              - mkdir -p /mnt/pg-password
+              - mount /dev/disk/by-id/virtio-PGSQL-PASS /mnt/pg-password
+              - export PG_PASSWORD=$(cat /mnt/pg-password/password)
+              - sudo -u postgres psql -c "CREATE USER myreadings-user WITH PASSWORD '$PG_PASSWORD';"
+              - mkdir -p /mnt/init-scripts
+              - mount /dev/disk/by-id/virtio-PGSQL-INIT /mnt/init-scripts
+              - "for f in /mnt/init-scripts/*.sql; do sudo -u postgres psql -f \"$f\"; done"
+              - "for db in books_db users_db review_db readinglist_db; do sudo -u postgres psql -c \"GRANT ALL PRIVILEGES ON DATABASE \\\"$db\\\" TO myreadings-user;\"; done"

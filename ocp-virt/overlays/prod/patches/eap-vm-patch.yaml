@@ -1,0 +1,12 @@
+apiVersion: kubevirt.io/v1
+kind: VirtualMachine
+metadata:
+  name: eap-vm
+spec:
+  template:
+    spec:
+      domain:
+        cpu:
+          cores: 4
+        memory:
+          guest: 8Gi

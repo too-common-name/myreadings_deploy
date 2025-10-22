@@ -1,0 +1,6 @@
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  name: nginx-route
+spec:
+  host: myreadings-dev.apps.cluster-wmpjb.dynamic.redhatworkshops.io

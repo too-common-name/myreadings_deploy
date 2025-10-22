@@ -1,0 +1,44 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+resources:
+  - virtualmachines/eap-vm.yaml
+  - virtualmachines/keycloak-vm.yaml
+  - virtualmachines/nginx-vm.yaml
+  - virtualmachines/rabbitmq-vm.yaml
+  - virtualmachines/postgres-vm.yaml
+  - services/eap-svc.yaml
+  - services/keycloak-svc.yaml
+  - services/nginx-svc.yaml
+  - services/rabbitmq-svc.yaml
+  - services/postgres-svc.yaml
+  - routes/nginx-route.yaml
+  - routes/keycloak-route.yaml
+  - networkpolicies/np-default-deny.yaml
+  - networkpolicies/np-frontend.yaml
+  - networkpolicies/np-backend.yaml
+  - networkpolicies/np-keycloak.yaml
+  - networkpolicies/np-rabbitmq.yaml
+  - networkpolicies/np-postgres.yaml
+  
+secretGenerator:
+- name: vm-ssh-keys
+  files:
+  - ssh-privatekey=secrets/keys/vms
+  - key=secrets/keys/vms.pub
+  type: kubernetes.io/ssh-auth
+- name: postgres-credentials
+  files:
+  - password=secrets/postgres-password.txt
+
+configMapGenerator:
+- name: postgres-init-scripts
+  files:
+  - ../../pg-init/01_create_databases.sql
+  - ../../pg-init/02_init_book_data.sql
+  - ../../pg-init/03_init_user_data.sql
+  - ../../pg-init/04_init_readinglist_data.sql
+  - ../../pg-init/05_init_review_data.sql
+- name: pgadmin-servers-config
+  files:
+  - ../../pgadmin/servers.json

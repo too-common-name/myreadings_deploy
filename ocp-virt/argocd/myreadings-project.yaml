@@ -1,0 +1,22 @@
+apiVersion: argoproj.io/v1alpha1
+kind: AppProject
+metadata:
+  name: myreadings
+  namespace: openshift-gitops
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  description: Project for the MyReadings application suite
+  sourceRepos:
+  - https://github.com/too-common-name/myreadings_deploy
+  destinations:
+  - server: https://kubernetes.default.svc
+    namespace: myreadings-dev
+  - server: https://kubernetes.default.svc
+    namespace: myreadings-prod
+  clusterResourceWhitelist:
+  - group: ''
+    kind: Namespace
+  namespaceResourceWhitelist:
+  - group: '*'
+    kind: '*'

@@ -1,0 +1,36 @@
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: myreadings-infra
+  namespace: openshift-gitops
+spec:
+  generators:
+  - git:
+      repoURL: https://github.com/too-common-name/myreadings_deploy
+      revision: ocp-virt-modular-monolith
+      directories:
+      - path: ocp-virt/overlays/*
+  template:
+    metadata:
+      name: 'myreadings-infra-{{path.basename}}'
+      namespace: openshift-gitops
+      labels:
+        environment: '{{path.basename}}'
+      finalizers:
+        - resources-finalizer.argocd.argoproj.io
+    spec:
+      project: default
+      source:
+        repoURL: https://github.com/too-common-name/myreadings_deploy
+        targetRevision: ocp-virt-modular-monolith
+        path: '{{path}}' 
+        kustomize: {}
+      destination:
+        server: https://kubernetes.default.svc
+        namespace: myreadings-{{path.basename}}
+      syncPolicy:
+        automated:
+          prune: true    
+          selfHeal: true
+        syncOptions:
+        - CreateNamespace=true

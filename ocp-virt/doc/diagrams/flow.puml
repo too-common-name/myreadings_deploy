@@ -1,0 +1,20 @@
+@startuml
+
+!theme plain 
+
+title MyReadings — OCPVirt deployment process flow
+
+actor Developer
+participant "GitOps Repo" as Git
+participant "ArgoCD" as Argo
+participant "OpenShift + OpenShift Virt" as OCP
+participant "VMs" as VMs
+participant "AAP" as AAP
+
+Developer -> Git : push manifests
+Git -> Argo : webhook / repo sync
+Argo -> OCP : apply manifests
+OCP -> VMs : create VMs (ansible-managed=true)
+AAP -> OCP : dynamic inventory sync
+AAP -> VMs : run configure-*.yml
+@enduml
