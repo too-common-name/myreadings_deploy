@@ -27,9 +27,14 @@ secretGenerator:
   - ssh-privatekey=secrets/keys/vms
   - key=secrets/keys/vms.pub
   type: kubernetes.io/ssh-auth
+  options:
+    disableNameSuffixHash: true
+    
 - name: postgres-credentials
   files:
   - password=secrets/postgres-password.txt
+  options:
+    disableNameSuffixHash: true
 
 configMapGenerator:
 - name: postgres-init-scripts
@@ -39,3 +44,5 @@ configMapGenerator:
   - pg-init/03_init_user_data.sql
   - pg-init/04_init_readinglist_data.sql
   - pg-init/05_init_review_data.sql
+  options:
+    disableNameSuffixHash: true
