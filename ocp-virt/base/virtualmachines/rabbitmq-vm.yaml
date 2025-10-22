@@ -7,7 +7,6 @@ metadata:
     role: messaging
     ansible-managed: "true"
 spec:
-  runStrategy: RerunOnFailure
   dataVolumeTemplates:
   - apiVersion: cdi.kubevirt.io/v1beta1
     kind: DataVolume
@@ -53,6 +52,7 @@ spec:
           - name: default
             masquerade: {}
           rng: {}
+      evictionStrategy: LiveMigrate
       networks:
       - name: default
         pod: {}
