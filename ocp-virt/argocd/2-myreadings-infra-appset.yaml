@@ -19,7 +19,7 @@ spec:
       finalizers:
         - resources-finalizer.argocd.argoproj.io
     spec:
-      project: default
+      project: myreadings
       source:
         repoURL: https://github.com/too-common-name/myreadings_deploy
         targetRevision: ocp-virt-modular-monolith
