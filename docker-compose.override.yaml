@@ -1,0 +1,5 @@
+services:
+  myreadings-app:
+    build:
+      context: ../myreadings/application/target/quarkus-app
+      dockerfile: ../../../application/src/main/docker/Dockerfile.local
