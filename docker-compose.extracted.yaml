@@ -1,0 +1,26 @@
+services:
+  myreadings-app:
+    build:
+      context: ../myreadings/application/target/quarkus-app
+      dockerfile: ../../../application/src/main/docker/Dockerfile.local
+    environment:
+      - USER_SERVICE_URL=http://user-service:8083
+
+  user-service:
+    build:
+      context: ../myreadings_user_service/target/quarkus-app
+      dockerfile: ../../../myreadings_user_service/src/main/docker/Dockerfile.local
+    container_name: user-service
+    env_file:
+      - .env
+    depends_on:
+      ansible-provisioner:
+        condition: service_completed_successfully
+    networks:
+      - myreadings-net
+    profiles:
+      - app
+
+  myreadings-ui:
+    volumes:
+      - ./nginx-extracted.conf:/etc/nginx/conf.d/default.conf:z
